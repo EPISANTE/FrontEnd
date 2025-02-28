@@ -1,29 +1,57 @@
 pipeline {
-         agent { label 'Front-agent' }
-         tools{
-               nodejs 'NodeJS'
-               }
+    agent any
 
+    environment {
+        DEPLOY_USER = 'gon'
+        DEPLOY_HOST = '172.31.253.98'
+        DEPLOY_PATH = '/var/www/react-app'
+    }
 
-         stages {
-
-            stage('Checkout') {
+    stages {
+        stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/Anir-sadiqui/Sirius-front.git'
+                git branch: 'master',
+                    credentialsId: '468aceec-2418-40f6-939e-9cd09038f26a',
+                    url: 'https://github.com/EPISANTE/FrontEnd.git'
             }
         }
 
-             stage('Build') {
-                 steps {
-                    sh 'cd /home/front/agent/workspace/front-jfile && npm install && npm run build'
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
 
-                 }
-             }
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
 
-             stage('Deploy to dev') {
-                 steps {
-                     sh 'bash /home/front/runFront.sh'
-                 }
-             }
-         }
-       }
+        stage('Deploy') {
+            steps {
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'GonVM',
+                            transfers: [
+                                sshTransfer(
+                                    sourceFiles: 'dist/**/*',
+                                    removePrefix: 'dist/',
+                                    remoteDirectory: "${DEPLOY_PATH}",
+                                    execCommand: ''
+                                )
+                            ],
+                            usePty: false,
+                            continueOnError: false,
+                            failOnError: true
+                        )
+                    ]
+                )
+            }
+        }
+    }
+      triggers {
+        githubPush()
+    }
+}
