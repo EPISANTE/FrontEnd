@@ -23,7 +23,7 @@ const RendezVousComponent = () => {
     useEffect(() => {
         const fetchDisponibilites = async () => {
             try {
-                const response = await axios.get('http://localhost:9090/disponibilites'); // Corrected port
+                const response = await axios.get('http://localhost:9090/disponibilites');
                 console.log('API Response:', response.data);
                 setDisponibilites(response.data);
             } catch (err) {

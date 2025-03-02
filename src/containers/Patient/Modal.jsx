@@ -1,8 +1,8 @@
-// eslint-disable-next-line no-unused-vars
-import React from 'react';
-import './Modal.css'; // Assurez-vous que ce fichier CSS existe
 
-// eslint-disable-next-line react/prop-types
+import React from 'react';
+import './Modal.css';
+
+
 const Modal = ({ isOpen, onClose, children }) => {
     if (!isOpen) return null;
 
