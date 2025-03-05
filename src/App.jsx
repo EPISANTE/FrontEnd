@@ -7,6 +7,7 @@ import MainContent from './components/Home/MainContent';
 import PageNotFound from './components/PageNotFound/PageNotFound';
 import PatientsPage from './containers/Patient/PatientsPage';
 import QuizContainer from "./containers/Quiz/QuizContainer.jsx";
+import DiagnosticContainer from "./containers/Diagnostic/DiagnosticContainer.jsx"
 import SearchBar from "src/components/SearchBar/SearchBar.jsx";
 import MedecinList from "src/components/MedecinList/MedecinList.jsx";
 import Calendrier from "src/components/Calendrier/Calendrier.jsx";
@@ -46,6 +47,8 @@ const App = () => {
 
 
                     <Route path="/calendrier/:medecinId" element={<Calendrier />} />
+
+                    <Route path="/diagnostic" element={<DiagnosticContainer />} />
 
 
                     <Route path="*" element={<PageNotFound />} />

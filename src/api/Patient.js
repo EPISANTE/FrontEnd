@@ -21,11 +21,7 @@ export const getPatientInfo = (email) => {
         .then(response => response.data)
         .catch(error => {
             console.error("Erreur lors de la récupération des informations du patient :", error);
-<<<<<<< HEAD
             throw error;
-=======
-            throw error; 
->>>>>>> ab61366 (s)
         });
 };
 
