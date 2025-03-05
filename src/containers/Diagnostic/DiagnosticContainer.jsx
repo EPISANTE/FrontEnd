@@ -1,49 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Question from '../../components/Quiz/Question';
+import DiagnosticAPI from '../../api/Diagnostic.js';
 
 
 const DiagnosticContainer = () => {
-    const [currentQuestion, setCurrentQuestion] = useState("Do you have fever? yes/no");
+    const [sessionId, setSessionId] = useState(null);
+    const [currentQuestion, setCurrentQuestion] = useState(null);
     const [diagnosis, setDiagnosis] = useState(null);
+    const [error, setError] = useState(null);
     const [answers, setAnswers] = useState([]);
 
-    const questions = [
-        "Do you have fever? yes/no",
-        "Do you have fatigue or muscle pain? (yes/no)",
-        "Do you have a cough? (yes/no)",
-        "Do you have a runny nose? (yes/no)",
-    ];
 
-    const handleAnswer = (questionText, answer) => {
-        const newAnswers = [...answers, { question: questionText, answer }];
-        setAnswers(newAnswers);
+    useEffect(() => {
+        const start = async () => {
+            try {
+                const {sessionId, firstQuestion} = await DiagnosticAPI.startDiagnosis();
+                setSessionId(sessionId);
+                setCurrentQuestion(firstQuestion);
+            } catch (err) {
+                setError("Failed to start diagnosis.");
+            }
+        };
+        start();
+    }, []);
 
-        if (questionText === questions[0]) {
-            if (answer) {
-                setCurrentQuestion(questions[1]);
-            } else {
-                setDiagnosis("Insufficient symptoms for a diagnosis. Please consult a doctor if you feel unwell.");
+    const handleAnswer = async (questionText, answer) => {
+
+        setAnswers(prevAnswers => [...prevAnswers, { question: questionText, answer }]);
+        try {
+            const response = await DiagnosticAPI.submitAnswer(sessionId, answer ? 'yes' : 'no');
+            if (response.startsWith("Diagnosis:")) {
+                setDiagnosis(response);
+            } else if (response.startsWith("Invalid answer.")) {
+                setError(response);
             }
-        } else if (questionText === questions[1]) {
-            if (answer) {
-                setCurrentQuestion(questions[2]);
-            } else {
-                setDiagnosis("Diagnosis: Possible Common Cold (Rhume)");
+            else {
+                setCurrentQuestion(response);
+                setError(null);
             }
-        } else if (questionText === questions[2]) {
-            if (answer) {
-                setDiagnosis("Diagnosis: Possible Flu (Grippe)");
-            } else {
-                setCurrentQuestion(questions[3]);
-            }
-        } else if (questionText === questions[3]) {
-            if(answer){
-                setDiagnosis("Diagnosis: Possible Common Cold (Rhume)");
-            }else{
-                setDiagnosis("Diagnosis: Possible COVID-19");
-            }
+        } catch (err) {
+            setError("Failed to process answer.");
         }
     };
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     if (diagnosis) {
         return (
@@ -60,6 +62,10 @@ const DiagnosticContainer = () => {
                 </ul>
             </div>
         );
+    }
+
+    if (!currentQuestion) {
+        return <div>Loading...</div>;
     }
 
     return (
