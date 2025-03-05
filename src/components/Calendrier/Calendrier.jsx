@@ -6,67 +6,86 @@ import "./Calendrier.css";
 
 const localizer = momentLocalizer(moment);
 
-const Calendrier = ({ disponibilites = [] }) => {
+const Calendrier = ({ disponibilites = [], onRdvPrendre }) => {
     const [events, setEvents] = useState([]);
 
     useEffect(() => {
         if (!Array.isArray(disponibilites) || disponibilites.length === 0) {
-            console.warn(" Aucune disponibilité reçue.");
+            console.warn("Aucune disponibilité reçue.");
             setEvents([]);
             return;
         }
 
-        console.log(" Disponibilités reçues :", disponibilites);
+        console.log("Disponibilités reçues :", disponibilites);
 
-        const joursSemaine = ["DIMANCHE", "LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI"];
-        const today = new Date();
+        const allEvents = [];
 
-        const mappedEvents = [];
 
-        disponibilites.forEach((dispo) => {
-            const targetDayIndex = joursSemaine.indexOf(dispo.jour);
-            let startDate = new Date(today);
-            startDate.setDate(today.getDate() + ((targetDayIndex - today.getDay() + 7) % 7));
+        const startDay = moment().startOf("week");
+        const endDay = startDay.clone().add(1, "month");
 
-            let startHour = dispo.periode === "MATIN" ? 9 : 14;
-            let endHour = dispo.periode === "MATIN" ? 13 : 17;
-            let startTime = moment(startDate).set({ hour: startHour, minute: 0 });
 
-            while (startTime.hour() < endHour) {
-                let endTime = moment(startTime).add(30, "minutes");
+        for (let date = startDay.clone(); date.isBefore(endDay, "day"); date.add(1, "day")) {
+            if (date.isoWeekday() > 5) continue;
 
-                mappedEvents.push({
-                    title: `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`,
-                    start: new Date(startTime),
-                    end: new Date(endTime),
-                    allDay: false,
-                    className: dispo.periode === "MATIN" ? "event-matin" : "event-soir",
+            for (let hour = 9; hour < 17; hour += 0.5) {
+                let startTime = date.clone().set({ hour: Math.floor(hour), minute: (hour % 1) * 60 });
+                let endTime = startTime.clone().add(30, "minutes");
+
+
+                let isDisponible = disponibilites.some(dispo => {
+                    return moment(dispo.date).isSame(date, "day") &&
+                        dispo.periode === (hour < 13 ? "MATIN" : "SOIR");
                 });
 
-                startTime = endTime;
+                allEvents.push({
+                    title: isDisponible ? "Disponible" : "Indisponible",
+                    start: startTime.toDate(),
+                    end: endTime.toDate(),
+                    allDay: false,
+                    className: isDisponible ? "event-disponible" : "event-indispo",
+                    isDisponible: isDisponible
+                });
             }
-        });
+        }
 
-        setEvents(mappedEvents);
+        setEvents(allEvents);
     }, [disponibilites]);
+
+    const handleSelectEvent = (event) => {
+        if (event.isDisponible) {
+            onRdvPrendre(event.start);
+        } else {
+            alert("Ce créneau est indisponible.");
+        }
+    };
 
     return (
         <div className="bg-white p-4 rounded-lg shadow-md max-w-3xl mx-auto">
-            <h2 className="text-lg font-bold mb-2 text-gray-800">📅 Calendrier des disponibilités</h2>
+            <h2 className="text-lg font-bold mb-2 text-gray-800"> Calendrier des disponibilités</h2>
             <Calendar
                 localizer={localizer}
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
+                selectable
+                onSelectEvent={handleSelectEvent}
                 defaultView="week"
-                views={["week", "day"]}
-                min={new Date(0, 0, 0, 9, 0)} // Début à 9h
-                max={new Date(0, 0, 0, 17, 0)} // Fin à 17h
+                views={["month", "week", "day"]}
+                min={new Date(0, 0, 0, 9, 0)}
+                max={new Date(0, 0, 0, 17, 0)}
+                step={30}
+                timeslots={2}
                 eventPropGetter={(event) => ({
                     className: event.className,
-                    style: { fontSize: "14px", borderRadius: "8px", padding: "5px" }
+                    style: {
+                        fontSize: "14px",
+                        borderRadius: "8px",
+                        padding: "5px",
+                        cursor: event.isDisponible ? "pointer" : "not-allowed"
+                    }
                 })}
-                style={{ height: 400, maxWidth: "100%", margin: "auto" }}
+                style={{ height: 500, maxWidth: "100%", margin: "auto" }}
             />
         </div>
     );

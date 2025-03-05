@@ -8,21 +8,21 @@ const MedecinList = ({ medecins }) => {
     const [loading, setLoading] = useState(false);
 
     const handleMedecinClick = async (medecin) => {
-        if (selectedMedecin?.id === medecin.id) return; // Empêcher le rechargement inutile
+        if (selectedMedecin?.id === medecin.id) return;
 
         setSelectedMedecin(medecin);
-        setDisponibilites([]); // Réinitialise immédiatement avant chargement
+        setDisponibilites([]);
         setLoading(true);
 
         try {
             const response = await api.get(`/api/medecins/disponibilites?medecinId=${medecin.id}`);
-            console.log(" Disponibilités récupérées :", response.data);
+            console.log(" Disponibilites recuperees :", response.data);
             setDisponibilites(response.data);
         } catch (error) {
-            console.error(" Erreur récupération disponibilités :", error);
+            console.error(" Erreur recuperation disponibilites :", error);
             setDisponibilites([]);
         } finally {
-            setLoading(false); // Désactive le chargement
+            setLoading(false);
         }
     };
 
@@ -51,7 +51,7 @@ const MedecinList = ({ medecins }) => {
                         Disponibilités de {selectedMedecin.nom}
                     </h2>
                     {loading ? (
-                        <p className="text-blue-500">Chargement des disponibilités...</p>
+                        <p className="text-blue-500" />
                     ) : (
                         <Calendrier disponibilites={disponibilites} />
                     )}

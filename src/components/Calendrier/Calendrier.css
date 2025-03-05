@@ -1,11 +1,16 @@
-.event-matin {
+
+.event-disponible {
     background-color: #b3e0ff !important;
     color: black !important;
     border-left: 4px solid #0099ff !important;
+    cursor: pointer;
 }
 
-.event-soir {
-    background-color: #ffcccb !important;
-    color: black !important;
-    border-left: 4px solid #ff6666 !important;
+
+.event-indispo {
+    background-color: #666666 !important;
+    color: white !important;
+    border-left: 4px solid #333333 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
 }

@@ -1,15 +1,15 @@
-// eslint-disable-next-line no-unused-vars
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+import { useNavigate } from 'react-router-dom';
 import axios from '../../axios';
 import "./PatientsPage.css";
 
 const PatientsPage = () => {
     const [patients, setPatients] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortField, setSortField] = useState('id'); // Default sorting field
+    const [sortField, setSortField] = useState('id');
 
-    const navigate = useNavigate(); // Utiliser useNavigate
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchPatients();
@@ -33,7 +33,7 @@ const PatientsPage = () => {
             return 0;
         });
         setPatients(sortedPatients);
-        setSortField(sortField === 'id' ? 'nom' : sortField === 'nom' ? 'age' : 'id'); // Toggle field
+        setSortField(sortField === 'id' ? 'nom' : sortField === 'nom' ? 'age' : 'id');
     };
 
     const filteredPatients = patients.filter(patient =>
@@ -45,7 +45,7 @@ const PatientsPage = () => {
             <h1>Patients</h1>
             <div className="actions-row">
                 <button
-                    onClick={() => navigate('/register')} // Redirection vers la page RegisterForm
+                    onClick={() => navigate('/register')}
                     className="add-button"
                 >
                     Add Patient
