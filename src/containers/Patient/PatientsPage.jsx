@@ -1,4 +1,5 @@
 
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../axios';
@@ -62,7 +63,7 @@ const PatientsPage = () => {
                 </button>
             </div>
 
-            {/* Patients Table */}
+
             <table>
                 <thead>
                 <tr>
