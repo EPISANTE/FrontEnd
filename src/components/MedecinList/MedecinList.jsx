@@ -16,10 +16,17 @@ const MedecinList = ({ medecins }) => {
 
         try {
             const response = await api.get(`/api/medecins/disponibilites?medecinId=${medecin.id}`);
-            console.log(" Disponibilites recuperees :", response.data);
+            console.log("Disponibilités récupérées :", response.data);
+
+            if (!Array.isArray(response.data)) {
+                console.error(" Format inattendu des disponibilités !");
+                setDisponibilites([]);
+                return;
+            }
+
             setDisponibilites(response.data);
         } catch (error) {
-            console.error(" Erreur recuperation disponibilites :", error);
+            console.error(" Erreur récupération disponibilités :", error);
             setDisponibilites([]);
         } finally {
             setLoading(false);
@@ -51,7 +58,7 @@ const MedecinList = ({ medecins }) => {
                         Disponibilités de {selectedMedecin.nom}
                     </h2>
                     {loading ? (
-                        <p className="text-blue-500" />
+                        <p className="text-blue-500">Chargement...</p>
                     ) : (
                         <Calendrier disponibilites={disponibilites} />
                     )}

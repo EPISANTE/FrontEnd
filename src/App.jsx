@@ -7,10 +7,11 @@ import MainContent from './components/Home/MainContent';
 import PageNotFound from './components/PageNotFound/PageNotFound';
 import PatientsPage from './containers/Patient/PatientsPage';
 import QuizContainer from "./containers/Quiz/QuizContainer.jsx";
-import SearchBar from "src/components/SearchBar/SearchBar.jsx";
-import MedecinList from "src/components/MedecinList/MedecinList.jsx";
-import Calendrier from "src/components/Calendrier/Calendrier.jsx";
-import Home from "src/containers/Home/Home.jsx";
+import SearchBar from "./components/SearchBar/SearchBar.jsx";
+import MedecinList from "./components/MedecinList/MedecinList.jsx";
+import Calendrier from "./components/Calendrier/Calendrier.jsx";
+import Home from "./containers/Home/Home.jsx";
+import MesRendezVous from "./components/MesRendezVous/MesRendezVous.jsx";
 
 const App = () => {
     return (
@@ -18,34 +19,29 @@ const App = () => {
             <div className="App">
                 <Header />
                 <Routes>
+
                     <Route path="/" element={<AuthPage />} />
 
+
                     <Route path="/dashboard"
-                        element={
-                            localStorage.getItem('userEmail')
-                                ? <Dashboard />
-                                : <Navigate to="/" replace />
-                        }
+                           element={
+                               localStorage.getItem('userEmail')
+                                   ? <Dashboard />
+                                   : <Navigate to="/" replace />
+                           }
                     />
+
+
                     <Route path="/patients" element={<PatientsPage />} />
                     <Route path="/quiz" element={<QuizContainer />} />
-
-                    <Route path="/" element={<MainContent />} />
-
-
                     <Route path="/main" element={<MainContent />} />
-
-
                     <Route path="/rendezvous" element={<Home />} />
-
-
                     <Route path="/search" element={<SearchBar />} />
-
-
                     <Route path="/medecins" element={<MedecinList />} />
-
-
                     <Route path="/calendrier/:medecinId" element={<Calendrier />} />
+
+
+                    <Route path="/mes-rendezvous" element={<MesRendezVous />} />
 
 
                     <Route path="*" element={<PageNotFound />} />
