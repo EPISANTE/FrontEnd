@@ -46,9 +46,9 @@ const AuthPage = () => {
 
         try {
             await register(patient);
-            setIsLogin(true); // Switch to login form
-            setError(""); // Clear errors
-            setPassword(""); // Clear password field
+            setIsLogin(true);
+            setError("");
+            setPassword("");
         } catch (error) {
             setError("Erreur lors de l'inscription: " + error.message);
         }
