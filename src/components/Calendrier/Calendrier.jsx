@@ -1,38 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
-import "moment/locale/en-gb";
 import api from "../../axios";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./Calendrier.css";
 
-// Configuration de moment.js pour l'affichage en anglais
 moment.locale("en");
 const localizer = momentLocalizer(moment);
 
 const Calendrier = ({ disponibilites = [], patientId }) => {
     const [events, setEvents] = useState([]);
 
-    // Fonction pour transformer les disponibilites en evenements du calendrier
+    // Transformer les disponibilites en evenements du calendrier
     const transformDisponibilitesEnEvents = (disponibilites) => {
         const allEvents = [];
 
         disponibilites.forEach((dispo) => {
-            console.log("Verification - Date:", dispo.date, "Periode:", dispo.periode);
-
-            // Convertir la date de la disponibilite en objet Date
             const startDate = dispo.date
                 ? moment(dispo.date, "YYYY-MM-DD").toDate()
                 : moment().day(dispo.jour).toDate();
 
-            console.log("Date traitee :", startDate);
-
-            // Definir les heures de debut et de fin en fonction de la periode (MATIN ou APRES-MIDI)
             const startHour = dispo.periode === "MATIN" ? 9 : 14;
             const endHour = dispo.periode === "MATIN" ? 13 : 17;
             let startTime = moment(startDate).set({ hour: startHour, minute: 0 });
 
-            // Creer des creneaux de 30 minutes pour la periode donnee
             while (startTime.hour() < endHour) {
                 const endTime = moment(startTime).add(30, "minutes");
 
@@ -53,23 +44,13 @@ const Calendrier = ({ disponibilites = [], patientId }) => {
         return allEvents;
     };
 
-    // Effet pour generer les evenements du calendrier lorsque les disponibilites changent
+    // Charger les evenements du calendrier
     useEffect(() => {
-        console.log("Disponibilites recues dans le Calendrier :", disponibilites);
-
-        if (!Array.isArray(disponibilites) || disponibilites.length === 0) {
-            console.warn("Aucune disponibilite recue.");
-            setEvents([]);
-            return;
-        }
-
-        // Transformer les disponibilites en evenements et les stocker dans le state
         const allEvents = transformDisponibilitesEnEvents(disponibilites);
-        console.log("Evenements generes :", allEvents);
         setEvents(allEvents);
     }, [disponibilites]);
 
-    // Fonction pour gerer la selection d'un evenement (creneau horaire)
+    // Gestion de la reservation d'un creneau
     const handleSelectEvent = async (event) => {
         if (!event.isDisponible) {
             alert("Ce creneau n'est pas disponible.");
@@ -82,7 +63,7 @@ const Calendrier = ({ disponibilites = [], patientId }) => {
         }
 
         try {
-            // Envoyer une requete pour reserver le creneau selectionne
+            // Envoyer une requete pour reserver le creneau
             const response = await api.post(`/api/rendezvous/reserver`, null, {
                 params: {
                     disponibiliteId: event.disponibiliteId,
@@ -93,7 +74,7 @@ const Calendrier = ({ disponibilites = [], patientId }) => {
             console.log("Reservation reussie :", response.data);
         } catch (error) {
             console.error("Erreur lors de la reservation :", error);
-            alert("Une erreur est survenue lors de la reservation.");
+            alert("Erreur lors de la reservation.");
         }
     };
 
