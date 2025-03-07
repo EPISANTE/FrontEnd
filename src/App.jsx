@@ -12,6 +12,7 @@ import SearchBar from "src/components/SearchBar/SearchBar.jsx";
 import MedecinList from "src/components/MedecinList/MedecinList.jsx";
 import Calendrier from "src/components/Calendrier/Calendrier.jsx";
 import Home from "src/containers/Home/Home.jsx";
+import AkinatorContainer from "./containers/Akinator/AkinatorContainer.jsx";
 
 const App = () => {
     return (
@@ -30,6 +31,8 @@ const App = () => {
                     />
                     <Route path="/patients" element={<PatientsPage />} />
                     <Route path="/quiz" element={<QuizContainer />} />
+
+                    <Route path= "/coco" element={<AkinatorContainer/>} />
 
                     <Route path="/" element={<MainContent />} />
 

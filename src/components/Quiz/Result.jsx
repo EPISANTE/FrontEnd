@@ -1,4 +1,3 @@
-// frontend/components/Quiz/Result.jsx
 import React from 'react';
 
 function Result({ result, onRestart }) {

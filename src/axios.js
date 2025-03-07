@@ -7,7 +7,7 @@ const baseURL =
 
 const api = axios.create({
     baseURL: baseURL,
-    timeout: 1000,
+    timeout: 3000,
     headers: { 'Authorization': 'Bearer yourToken' },
 });
 
