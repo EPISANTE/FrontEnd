@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
 import { login, register } from 'src/api/Patient';
 import './AuthPage.css';
@@ -21,9 +20,9 @@ const AuthPage = () => {
         e.preventDefault();
         try {
             await login(email, password);
-            localStorage.setItem('userEmail', email);
+            localStorage.setItem('patientEmail', email); // Utiliser 'patientEmail'
+            console.log("Email stocké dans le localStorage :", email); // Vérification
             window.location.href = '/main';
-            // eslint-disable-next-line no-unused-vars
         } catch (error) {
             setError("Email ou mot de passe incorrect");
         }
