@@ -1,5 +1,6 @@
 import React from 'react';
 import logo1 from "../../assets/logo1.png";
+
 import './Header.css';
 
 const Header = () => {
@@ -7,6 +8,7 @@ const Header = () => {
         <header className="header">
             <div className="header-container">
                 <img src={logo1} alt="Site Logo" className="logo1" />
+
                 <nav className="nav">
                     <ul className="nav-links">
                         <li><a href="/">Home</a></li>
@@ -15,6 +17,8 @@ const Header = () => {
                         <li><a href="/contact">Contact</a></li>
                     </ul>
                 </nav>
+
+
             </div>
         </header>
     );

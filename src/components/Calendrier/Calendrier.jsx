@@ -13,130 +13,72 @@ const Calendrier = ({ disponibilites = [] }) => {
     const [events, setEvents] = useState([]);
     const [patientEmail, setPatientEmail] = useState(null);
 
-    // Récupérer l'email du patient depuis le localStorage
     useEffect(() => {
         const storedPatientEmail = localStorage.getItem("patientEmail");
-        if (storedPatientEmail) {
-            setPatientEmail(storedPatientEmail);
-        } else {
-            console.warn("Aucun utilisateur connecté. Redirection vers la page de connexion...");
-            // Rediriger vers la page de connexion
-        }
+        storedPatientEmail && setPatientEmail(storedPatientEmail);
     }, []);
 
-    // Transformer les disponibilités en événements du calendrier
     const transformDisponibilitesEnEvents = (disponibilites) => {
-        const allEvents = [];
+        return disponibilites.flatMap(dispo => {
+            const startDate = moment(dispo.date).startOf('day');
 
-        disponibilites.forEach((dispo) => {
-            const startDate = dispo.date
-                ? moment(dispo.date, "YYYY-MM-DD").toDate()
-                : moment().day(dispo.jour).toDate();
-
-            const startHour = dispo.periode === "MATIN" ? 9 : 14;
-            const endHour = dispo.periode === "MATIN" ? 13 : 17;
-            let startTime = moment(startDate).set({ hour: startHour, minute: 0 });
-
-            while (startTime.hour() < endHour) {
-                const endTime = moment(startTime).add(30, "minutes");
-
-                allEvents.push({
-                    title: `Disponible (${startTime.format("HH:mm")})`,
-                    start: new Date(startTime),
-                    end: new Date(endTime),
-                    allDay: false,
-                    className: "event-disponible",
-                    isDisponible: true,
+            return Array.from({ length: 8 }, (_, i) => {
+                const startHour = 9 + (i * 0.5);
+                return {
+                    title: `Créneau ${i + 1}`,
+                    start: startDate.clone().add(startHour, 'hours').toDate(),
+                    end: startDate.clone().add(startHour + 0.5, 'hours').toDate(),
+                    isDisponible: !dispo.reserve,
                     disponibiliteId: dispo.id,
-                });
-
-                startTime = endTime;
-            }
+                    className: dispo.reserve ? "event-indisponible" : "event-disponible"
+                };
+            });
         });
-
-        return allEvents;
     };
 
-    // Charger les événements du calendrier
     useEffect(() => {
-        const allEvents = transformDisponibilitesEnEvents(disponibilites);
-        setEvents(allEvents);
+        setEvents(transformDisponibilitesEnEvents(disponibilites));
     }, [disponibilites]);
 
-    const handleSelectEvent = async (event) => {
-        if (!event.isDisponible) {
-            alert("Ce créneau n'est pas disponible.");
-            return;
-        }
-
-        if (!patientEmail) {
-            alert("Vous devez être connecté pour réserver un rendez-vous.");
-            return;
-        }
-
-        // Confirmation avant la réservation
-        const confirmation = window.confirm("Êtes-vous sûr de vouloir réserver ce rendez-vous ?");
-        if (!confirmation) {
-            return; // Annuler la réservation si l'utilisateur clique sur "Non"
-        }
-
-        console.log("disponibiliteId :", event.disponibiliteId);
-        console.log("patientEmail :", patientEmail);
-
+    const handleReservation = async (disponibiliteId) => {
         try {
-            const response = await api.post(`/api/rendezvous/reserver`, null, {
-                params: {
-                    disponibiliteId: event.disponibiliteId,
-                    patientEmail: patientEmail,
-                },
-            });
-            alert("Rendez-vous réservé avec succès !");
-            console.log("Réservation réussie :", response.data);
+            await api.post("/api/rendezvous/reserver",
+                { disponibiliteId, patientEmail },
+                { headers: { 'Content-Type': 'application/json' } }
+            );
 
-            // Mettre à jour les événements pour rendre le créneau indisponible
-            const updatedEvents = events.map((evt) => {
-                if (evt.disponibiliteId === event.disponibiliteId) {
-                    return { ...evt, isDisponible: false, className: "event-indisponible" };
-                }
-                return evt;
-            });
-            setEvents(updatedEvents);
+            setEvents(events.map(event =>
+                event.disponibiliteId === disponibiliteId
+                    ? { ...event, isDisponible: false, className: "event-indisponible" }
+                    : event
+            ));
+            alert("Réservation confirmée !");
         } catch (error) {
-            console.error("Erreur lors de la réservation :", error);
-            console.error("Détails de l'erreur :", error.response.data); // Afficher les données de la réponse
-            console.error("Statut de l'erreur :", error.response.status); // Afficher le statut HTTP
-            console.error("En-têtes de l'erreur :", error.response.headers); // Afficher les en-têtes
-            alert("Erreur lors de la réservation.");
+            alert(error.response?.data?.message || "Erreur de réservation");
         }
     };
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow-md max-w-3xl mx-auto">
-            <h2 className="text-lg font-bold mb-2 text-gray-800">📅 Calendrier des disponibilités</h2>
+        <div className="calendar-container">
             <Calendar
                 localizer={localizer}
                 events={events}
-                startAccessor="start"
-                endAccessor="end"
-                selectable
-                onSelectEvent={handleSelectEvent} // Associer la fonction handleSelectEvent
-                defaultView="week"
-                views={["month", "week", "day"]}
-                culture="en"
-                min={new Date(0, 0, 0, 9, 0)} // Heure de début : 9h
-                max={new Date(0, 0, 0, 17, 0)} // Heure de fin : 17h
-                step={30} // Pas de 30 minutes
-                timeslots={2} // Nombre de créneaux par heure
-                eventPropGetter={(event) => ({
+                step={30}
+                timeslots={2}
+                onSelectEvent={event => {
+                    if (!event.isDisponible) return;
+                    if (confirm(`Réserver le créneau du ${moment(event.start).format('HH:mm')} ?`)) {
+                        handleReservation(event.disponibiliteId);
+                    }
+                }}
+                eventPropGetter={event => ({
                     className: event.className,
                     style: {
-                        fontSize: "14px",
-                        borderRadius: "8px",
-                        padding: "5px",
-                        cursor: event.isDisponible ? "pointer" : "not-allowed",
-                    },
+                        cursor: event.isDisponible ? 'pointer' : 'not-allowed'
+                    }
                 })}
-                style={{ height: 500, maxWidth: "100%", margin: "auto" }}
+                min={new Date().setHours(8, 0)}
+                max={new Date().setHours(18, 0)}
             />
         </div>
     );

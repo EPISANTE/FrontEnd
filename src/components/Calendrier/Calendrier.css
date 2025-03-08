@@ -1,22 +1,39 @@
-
-.event-disponible {
-    background-color: #b3e0ff !important;
-    color: black !important;
-    border-left: 4px solid #0099ff !important;
-    cursor: pointer;
+.calendar-container {
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: 600px;
 }
 
+.event-disponible {
+    background: transparent !important;
+    border: 2px solid #2196F3 !important;
+    color: #2196F3 !important;
+    border-radius: 4px;
+}
 
-.event-indispo {
-    background-color: #666666 !important;
-    color: white !important;
-    border-left: 4px solid #333333 !important;
-    cursor: not-allowed;
-    opacity: 0.7;
+.event-indisponible {
+    background: #fafafa !important;
+    border: 2px solid #bdbdbd !important;
+    color: #bdbdbd !important;
+    cursor: not-allowed !important;
+}
 
+.rbc-event-content {
+    padding: 2px 5px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
 
-    .event-indisponible {
-        background-color: #ffcccc; /* Couleur de fond pour les créneaux indisponibles */
-        cursor: not-allowed; /* Curseur non autorisé */
-    }
+.rbc-time-view .rbc-time-gutter {
+    min-width: 60px;
+}
+
+.rbc-time-header {
+    font-weight: 600;
+}
+
+.rbc-time-content {
+    scroll-behavior: smooth;
 }
