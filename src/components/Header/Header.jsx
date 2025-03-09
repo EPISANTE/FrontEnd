@@ -1,6 +1,6 @@
 import React from 'react';
 import logo1 from "../../assets/logo1.png";
-
+import NotificationBell from '../NotificationBell/NotificationBell.jsx';
 import './Header.css';
 
 const Header = () => {
@@ -15,6 +15,7 @@ const Header = () => {
                         <li><a href="/about">About</a></li>
                         <li><a href="/services">Services</a></li>
                         <li><a href="/contact">Contact</a></li>
+                        <li><NotificationBell/></li>
                     </ul>
                 </nav>
 
