@@ -6,7 +6,7 @@ const DiagnosticAPI = {
             const response = await axios.post('/api/diagnostic/start');
 
             const [sessionId, firstQuestion] = response.data.split(',');
-            return {sessionId, firstQuestion} ; // Return session ID
+            return {sessionId, firstQuestion} ;
         } catch (error) {
             console.error("Error starting diagnosis:", error);
             throw error;

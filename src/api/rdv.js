@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:8080/api/rendezvous"; // Remplacez par l'URL de votre backend
+const API_BASE_URL = "http://172.31.253.114:9090/api/rendezvous";
 
-// Récupérer les rendez-vous d'un patient par email
+
 export const getRendezVousByEmail = (email) => {
     return axios.get(`${API_BASE_URL}/rendezvs`, {
         params: { email }
