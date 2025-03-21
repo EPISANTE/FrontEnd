@@ -24,8 +24,8 @@ const Calendrier = ({ disponibilites = [] }) => {
         return disponibilites.flatMap(dispo => {
             const creneaux = [];
             const periods = [
-                { start: 9, end: 12 }, // Matin
-                { start: 13, end: 17 }  // Après-midi
+                { start: 9, end: 12 },
+                { start: 13, end: 17 }
             ];
 
             periods.forEach(({ start, end }) => {
