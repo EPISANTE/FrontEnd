@@ -6,9 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const MainContent = () => {
     const navigate = useNavigate();
 
-    const [patientEmail, setPatientEmail] = useState('');
-    const API_BASE_URL = "http://localhost:9090/api";
-
+    const [, setPatientEmail] = useState('');
     useEffect(() => {
         const email = localStorage.getItem('patientEmail');
         if (email) {

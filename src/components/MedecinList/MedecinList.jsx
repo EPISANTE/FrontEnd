@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import Calendrier from "../Calendrier/Calendrier";
 import api from "../../axios";
 
-const MedecinList = ({ medecins }) => {
+const MedecinList = ({ medecins = [] }) => {
+    const safeMedecins = Array.isArray(medecins) ? medecins : [];
+
     const [selectedMedecin, setSelectedMedecin] = useState(null);
     const [disponibilites, setDisponibilites] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -16,17 +19,9 @@ const MedecinList = ({ medecins }) => {
 
         try {
             const response = await api.get(`/api/medecins/disponibilites?medecinId=${medecin.id}`);
-            console.log("Disponibilités récupérées :", response.data);
-
-            if (!Array.isArray(response.data)) {
-                console.error(" Format inattendu des disponibilités !");
-                setDisponibilites([]);
-                return;
-            }
-
             setDisponibilites(response.data);
         } catch (error) {
-            console.error(" Erreur récupération disponibilités :", error);
+            console.error("Erreur récupération disponibilités :", error);
             setDisponibilites([]);
         } finally {
             setLoading(false);
@@ -35,8 +30,8 @@ const MedecinList = ({ medecins }) => {
 
     return (
         <div className="space-y-4">
-            {medecins.length > 0 ? (
-                medecins.map((medecin) => (
+            {safeMedecins.length > 0 ? (
+                safeMedecins.map((medecin) => (
                     <div
                         key={medecin.id}
                         className={`p-4 border rounded shadow-md cursor-pointer hover:bg-gray-100 ${
@@ -58,7 +53,7 @@ const MedecinList = ({ medecins }) => {
                         Disponibilités de {selectedMedecin.nom}
                     </h2>
                     {loading ? (
-                        <p className="text-blue-500">Chargement...</p>
+                        <p className="text-blue-500">Chargement des disponibilités...</p>
                     ) : (
                         <Calendrier disponibilites={disponibilites} />
                     )}
@@ -66,6 +61,16 @@ const MedecinList = ({ medecins }) => {
             )}
         </div>
     );
+};
+
+MedecinList.propTypes = {
+    medecins: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            nom: PropTypes.string.isRequired,
+            specialite: PropTypes.string.isRequired
+        })
+    )
 };
 
 export default MedecinList;

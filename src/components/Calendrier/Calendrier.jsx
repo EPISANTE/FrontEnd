@@ -14,111 +14,103 @@ const Calendrier = ({ disponibilites = [] }) => {
     const [patientEmail, setPatientEmail] = useState(null);
 
     useEffect(() => {
-        const storedPatientEmail = localStorage.getItem("patientEmail");
-        storedPatientEmail && setPatientEmail(storedPatientEmail);
+        const email = localStorage.getItem("patientEmail");
+        if (email) setPatientEmail(email);
     }, []);
 
-    const transformDisponibilitesEnEvents = (disponibilites) => {
-        return disponibilites.map(dispo => {
-            const start = moment(dispo.date).toDate();
-            const end = moment(dispo.date).add(30, 'minutes').toDate();
+    const genererEvenements = (disponibilites) => {
+        const creneauxUniques = new Set();
 
-            const isUserReservation = dispo.patient?.email === patientEmail;
+        return disponibilites.flatMap(dispo => {
+            const creneaux = [];
+            const periods = [
+                { start: 9, end: 12 }, // Matin
+                { start: 13, end: 17 }  // Après-midi
+            ];
 
-            return {
-                title: isUserReservation ? "Votre RDV" : dispo.reserve ? "Réservé" : "Disponible",
-                start: start,
-                end: end,
-                isDisponible: !dispo.reserve,
-                disponibiliteId: dispo.id,
-                className: dispo.reserve ?
-                    (isUserReservation ? "event-votre-rdv" : "event-indisponible")
-                    : "event-disponible",
-                style: {
-                    backgroundColor: dispo.reserve ?
-                        (isUserReservation ? "#c8e6c9" : "#ffcdd2")
-                        : "#e3f2fd"
+            periods.forEach(({ start, end }) => {
+                let current = moment(dispo.date).set({ hour: start, minute: 0 });
+                const finPeriode = moment(dispo.date).set({ hour: end, minute: 0 });
+
+                while (current.isBefore(finPeriode)) {
+                    const finCreneau = moment(current).add(30, 'minutes');
+                    const slotId = `${current.format()}-${finCreneau.format()}`;
+
+                    if (!creneauxUniques.has(slotId)) {
+                        creneauxUniques.add(slotId);
+
+                        const estReserve = dispo.reserve;
+
+                        creneaux.push({
+                            title: estReserve ? "Réservé" : "Disponible",
+                            start: current.toDate(),
+                            end: finCreneau.toDate(),
+                            disponibiliteId: dispo.id,
+                            isDisponible: !estReserve,
+                            style: {
+                                backgroundColor: estReserve ? "#FF5252" : "#2196F3", // Rouge ou Bleu
+                                color: "#FFFFFF",
+                                borderRadius: "4px",
+                                border: estReserve ? "2px solid #D32F2F" : "2px solid #1976D2",
+                                cursor: estReserve ? "not-allowed" : "pointer",
+                                opacity: 1,
+                                transition: "all 0.2s ease"
+                            }
+                        });
+                    }
+                    current = finCreneau;
                 }
-            };
+            });
+            return creneaux;
         });
     };
 
     useEffect(() => {
-        setEvents(transformDisponibilitesEnEvents(disponibilites));
+        setEvents(genererEvenements(disponibilites));
     }, [disponibilites, patientEmail]);
 
-    const handleReservation = async (disponibiliteId) => {
+    const reserverCreneau = async (disponibiliteId) => {
         if (!patientEmail) {
-            alert("Veuillez vous connecter pour réserver");
+            alert("Connectez-vous pour réserver");
             return;
         }
 
         try {
-            await api.post(
-                "/api/rendezvous/reserver",
+            await api.post("/api/rendezvous/reserver",
                 { disponibiliteId, patientEmail },
-                { headers: { 'Content-Type': 'application/json' } }
+                { headers: { "Content-Type": "application/json" } }
             );
 
-            window.dispatchEvent(new Event('new-notification'));
 
-            setEvents(prevEvents =>
-                prevEvents.map(event =>
-                    event.disponibiliteId === disponibiliteId
-                        ? { ...event,
-                            title: "Votre RDV",
-                            isDisponible: false,
-                            className: "event-votre-rdv",
-                            style: {
-                                backgroundColor: "#c8e6c9",
-                                borderLeft: "3px solid #2e7d32"
-                            }
+            setEvents(prev => prev.map(event =>
+                event.disponibiliteId === disponibiliteId
+                    ? {
+                        ...event,
+                        title: "Réservé",
+                        isDisponible: false,
+                        style: {
+                            ...event.style,
+                            backgroundColor: "#FF5252",
+                            border: "2px solid #D32F2F"
                         }
-                        : event
-                )
-            );
+                    }
+                    : event
+            ));
 
-            alert("Réservation confirmée !");
+            window.dispatchEvent(new Event('reservation-update'));
+            alert("Réservé avec succès !");
         } catch (error) {
-            const errorMessage = error.response?.data?.message ||
-                error.response?.data ||
-                "Erreur lors de la réservation";
-            alert(`Échec : ${errorMessage}`);
+            alert("Échec : " + (error.response?.data?.message || "Erreur serveur"));
         }
     };
 
-    const eventStyleGetter = (event) => {
-        return {
-            className: event.className,
-            style: {
-                ...event.style,
-                borderRadius: "4px",
-                border: "none",
-                color: "#333",
-                cursor: event.isDisponible ? "pointer" : "not-allowed",
-                opacity: 1
-            }
-        };
-    };
+    const eventStyleGetter = (event) => ({
+        style: event.style
+    });
 
     return (
         <div className="calendar-container">
-            <h2>Calendrier de réservation</h2>
-            <div className="calendar-legend">
-                <div className="legend-item">
-                    <div className="color-box disponible"></div>
-                    <span>Disponible</span>
-                </div>
-                <div className="legend-item">
-                    <div className="color-box reserve"></div>
-                    <span>Réservé</span>
-                </div>
-                <div className="legend-item">
-                    <div className="color-box votre-rdv"></div>
-                    <span>Votre RDV</span>
-                </div>
-            </div>
-
+            <h2 className="titre-calendrier">Planification des rendez-vous</h2>
             <Calendar
                 localizer={localizer}
                 events={events}
@@ -130,22 +122,32 @@ const Calendrier = ({ disponibilites = [] }) => {
                 views={["day", "week", "month"]}
                 messages={{
                     today: "Aujourd'hui",
-                    previous: "Précédent",
-                    next: "Suivant",
+                    previous: "◄",
+                    next: "►",
                     month: "Mois",
                     week: "Semaine",
                     day: "Jour"
                 }}
                 onSelectEvent={event => {
-                    if (!event.isDisponible) return;
-                    if (window.confirm(
-                        `Confirmer la réservation pour ${moment(event.start).format('dddd D MMMM [à] HH:mm')} ?`
+                    if (event.isDisponible && window.confirm(
+                        `Confirmer le rendez-vous le ${moment(event.start).format("dddd Do MMMM [à] HH:mm")} ?`
                     )) {
-                        handleReservation(event.disponibiliteId);
+                        reserverCreneau(event.disponibiliteId);
                     }
                 }}
                 eventPropGetter={eventStyleGetter}
             />
+
+            <div className="legende">
+                <div className="item-legende">
+                    <span className="couleur disponible"></span>
+                    Disponible
+                </div>
+                <div className="item-legende">
+                    <span className="couleur reserve"></span>
+                    Réservé
+                </div>
+            </div>
         </div>
     );
 };
