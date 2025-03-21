@@ -39,7 +39,7 @@ const Calendrier = ({ disponibilites = [] }) => {
                     if (!creneauxUniques.has(slotId)) {
                         creneauxUniques.add(slotId);
 
-                        const estReserve = dispo.reserve;
+                       const estReserve = dispo.reserve;
 
                         creneaux.push({
                             title: estReserve ? "Réservé" : "Disponible",
@@ -48,10 +48,10 @@ const Calendrier = ({ disponibilites = [] }) => {
                             disponibiliteId: dispo.id,
                             isDisponible: !estReserve,
                             style: {
-                                backgroundColor: estReserve ? "#FF5252" : "#2196F3", // Rouge ou Bleu
+                                backgroundColor: "#2196F3",
                                 color: "#FFFFFF",
                                 borderRadius: "4px",
-                                border: estReserve ? "2px solid #D32F2F" : "2px solid #1976D2",
+                                border: "2px solid #1976D2",
                                 cursor: estReserve ? "not-allowed" : "pointer",
                                 opacity: 1,
                                 transition: "all 0.2s ease"
@@ -81,7 +81,6 @@ const Calendrier = ({ disponibilites = [] }) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-
             setEvents(prev => prev.map(event =>
                 event.disponibiliteId === disponibiliteId
                     ? {
@@ -89,9 +88,7 @@ const Calendrier = ({ disponibilites = [] }) => {
                         title: "Réservé",
                         isDisponible: false,
                         style: {
-                            ...event.style,
-                            backgroundColor: "#FF5252",
-                            border: "2px solid #D32F2F"
+                            ...event.style
                         }
                     }
                     : event
@@ -138,16 +135,7 @@ const Calendrier = ({ disponibilites = [] }) => {
                 eventPropGetter={eventStyleGetter}
             />
 
-            <div className="legende">
-                <div className="item-legende">
-                    <span className="couleur disponible"></span>
-                    Disponible
-                </div>
-                <div className="item-legende">
-                    <span className="couleur reserve"></span>
-                    Réservé
-                </div>
-            </div>
+
         </div>
     );
 };
