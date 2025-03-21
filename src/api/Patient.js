@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:9090/api/patients";
+const API_BASE_URL = "http://172.31.253.114:9090/api/patients";
 
 export const submitStressTest = (email, sr) => {
     return axios.get(`${API_BASE_URL}/stress`, {
