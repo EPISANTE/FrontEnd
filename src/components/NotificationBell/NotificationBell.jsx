@@ -20,11 +20,14 @@ const NotificationBell = () => {
             const encodedEmail = encodeURIComponent(patientEmail);
             const response = await api.get(`/api/notifications/patient/email/${encodedEmail}`);
 
-            const formattedNotifications = response.data.map(notif => ({
-                ...notif,
-                dateCreation: moment(notif.dateCreation),
-                dateRdv: moment(notif.dateRdv)
-            }));
+
+            const formattedNotifications = response.data
+                .map(notif => ({
+                    ...notif,
+                    dateCreation: moment(notif.dateCreation),
+                    dateRdv: moment(notif.dateRdv)
+                }))
+                .sort((a, b) => b.dateCreation - a.dateCreation);
 
             setNotifications(formattedNotifications);
         } catch (error) {

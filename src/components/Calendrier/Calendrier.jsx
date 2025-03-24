@@ -31,6 +31,7 @@ const Calendrier = ({ disponibilites = [] }) => {
             periods.forEach(({ start, end }) => {
                 let current = moment(dispo.date).set({ hour: start, minute: 0 });
                 const finPeriode = moment(dispo.date).set({ hour: end, minute: 0 });
+                let creneauIndex = 0;
 
                 while (current.isBefore(finPeriode)) {
                     const finCreneau = moment(current).add(30, 'minutes');
@@ -39,7 +40,7 @@ const Calendrier = ({ disponibilites = [] }) => {
                     if (!creneauxUniques.has(slotId)) {
                         creneauxUniques.add(slotId);
 
-                        const estReserve = dispo.reserve;
+                        const estReserve = dispo.reserve || creneauIndex % 3 === 0;
 
                         creneaux.push({
                             title: estReserve ? "Réservé" : "Disponible",
@@ -48,10 +49,10 @@ const Calendrier = ({ disponibilites = [] }) => {
                             disponibiliteId: dispo.id,
                             isDisponible: !estReserve,
                             style: {
-                                backgroundColor: estReserve ? "#FF5252" : "#2196F3", // Rouge ou Bleu
+                                backgroundColor: estReserve ? "#FF0000" : "#2196F3",
                                 color: "#FFFFFF",
                                 borderRadius: "4px",
-                                border: estReserve ? "2px solid #D32F2F" : "2px solid #1976D2",
+                                border: estReserve ? "2px solid #CC0000" : "2px solid #1976D2",
                                 cursor: estReserve ? "not-allowed" : "pointer",
                                 opacity: 1,
                                 transition: "all 0.2s ease"
@@ -59,17 +60,17 @@ const Calendrier = ({ disponibilites = [] }) => {
                         });
                     }
                     current = finCreneau;
+                    creneauIndex++;
                 }
             });
             return creneaux;
         });
     };
-
     useEffect(() => {
         setEvents(genererEvenements(disponibilites));
     }, [disponibilites, patientEmail]);
 
-    const reserverCreneau = async (disponibiliteId) => {
+    const reserverCreneau = async (disponibiliteId, eventIndex) => {
         if (!patientEmail) {
             alert("Connectez-vous pour réserver");
             return;
@@ -82,16 +83,17 @@ const Calendrier = ({ disponibilites = [] }) => {
             );
 
 
-            setEvents(prev => prev.map(event =>
-                event.disponibiliteId === disponibiliteId
+            setEvents(prev => prev.map((event, index) =>
+                index === eventIndex
                     ? {
                         ...event,
                         title: "Réservé",
                         isDisponible: false,
                         style: {
                             ...event.style,
-                            backgroundColor: "#FF5252",
-                            border: "2px solid #D32F2F"
+                            backgroundColor: "#FF0000",
+                            border: "2px solid #CC0000",
+                            cursor: "not-allowed"
                         }
                     }
                     : event
@@ -132,22 +134,14 @@ const Calendrier = ({ disponibilites = [] }) => {
                     if (event.isDisponible && window.confirm(
                         `Confirmer le rendez-vous le ${moment(event.start).format("dddd Do MMMM [à] HH:mm")} ?`
                     )) {
-                        reserverCreneau(event.disponibiliteId);
+                        const eventIndex = events.findIndex(e => e.disponibiliteId === event.disponibiliteId && e.start === event.start);
+                        reserverCreneau(event.disponibiliteId, eventIndex);
                     }
                 }}
                 eventPropGetter={eventStyleGetter}
             />
 
-            <div className="legende">
-                <div className="item-legende">
-                    <span className="couleur disponible"></span>
-                    Disponible
-                </div>
-                <div className="item-legende">
-                    <span className="couleur reserve"></span>
-                    Réservé
-                </div>
-            </div>
+
         </div>
     );
 };
