@@ -20,8 +20,8 @@ const AuthPage = () => {
         e.preventDefault();
         try {
             await login(email, password);
-            localStorage.setItem('patientEmail', email); // Utiliser 'patientEmail'
-            console.log("Email stocké dans le localStorage :", email); // Vérification
+            localStorage.setItem('patientEmail', email);
+            console.log("Email stocké dans le localStorage :", email);
             window.location.href = '/main';
         } catch (error) {
             setError("Email ou mot de passe incorrect");
