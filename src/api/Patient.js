@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = "http://172.31.250.99:5173:9090/api/patients";
+const API_BASE_URL = "http://172.31.250.99:9090/api/patients";
 
 export const submitStressTest = (email, sr) => {
     return axios.get(`${API_BASE_URL}/stress`, {
