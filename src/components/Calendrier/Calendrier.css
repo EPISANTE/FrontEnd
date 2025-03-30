@@ -39,8 +39,11 @@
     border: 2px solid rgba(0, 0, 0, 0.1);
 }
 
-.couleur.disponible { background: #2196F3; }
-.couleur.reserve { background: #FF5252; }
+.couleur.disponible,
+.couleur.reserve {
+    background-color: #2196F3;
+    border: 2px solid #1976D2; /
+}
 
 
 .rbc-header {
