@@ -9,7 +9,6 @@ import PatientsPage from './containers/Patient/PatientsPage';
 import QuizContainer from "./containers/Quiz/QuizContainer.jsx";
 import DiagnosticContainer from "./containers/Diagnostic/DiagnosticContainer.jsx"
 import SearchBar from "src/components/SearchBar/SearchBar.jsx";
-import MedecinList from "src/components/MedecinList/MedecinList.jsx";
 import Calendrier from "src/components/Calendrier/Calendrier.jsx";
 import Home from "src/containers/Home/Home.jsx";
 import AkinatorContainer from "./containers/Akinator/AkinatorContainer.jsx";

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../../axios'; // Your axios instance
+import axios from '../../axios';
 
 function AkinatorContainer() {
     const [currentNode, setCurrentNode] = useState(null);
