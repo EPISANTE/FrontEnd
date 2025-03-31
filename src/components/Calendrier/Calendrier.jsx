@@ -66,6 +66,7 @@ const Calendrier = ({ disponibilites = [] }) => {
             return creneaux;
         });
     };
+
     useEffect(() => {
         setEvents(genererEvenements(disponibilites));
     }, [disponibilites, patientEmail]);
@@ -81,7 +82,6 @@ const Calendrier = ({ disponibilites = [] }) => {
                 { disponibiliteId, patientEmail },
                 { headers: { "Content-Type": "application/json" } }
             );
-
 
             setEvents(prev => prev.map((event, index) =>
                 index === eventIndex
@@ -140,8 +140,6 @@ const Calendrier = ({ disponibilites = [] }) => {
                 }}
                 eventPropGetter={eventStyleGetter}
             />
-
-
         </div>
     );
 };

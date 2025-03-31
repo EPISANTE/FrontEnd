@@ -14,34 +14,6 @@
     font-size: 1.8rem;
 }
 
-.legende {
-    display: flex;
-    gap: 2rem;
-    justify-content: center;
-    margin-top: 2rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.item-legende {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: #495057;
-}
-
-.couleur {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-}
-
-.couleur.disponible { background: #2196F3; }
-.couleur.reserve { background: #FF5252; }
-
 
 .rbc-header {
     background: #f1f3f5;
@@ -73,6 +45,7 @@
     transition: all 0.2s;
     margin: 0 0.3rem;
     border-radius: 6px !important;
+    padding: 6px 12px;
 }
 
 .rbc-toolbar button:hover {
@@ -85,3 +58,32 @@
     color: white !important;
     border-color: #2196F3 !important;
 }
+
+/* Légende */
+.legende {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.item-legende {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.couleur {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.couleur.disponible { background: #2196F3; }
+.couleur.reserve { background: #FF5252; }
