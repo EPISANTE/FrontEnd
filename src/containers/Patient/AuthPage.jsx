@@ -20,7 +20,7 @@ const AuthPage = () => {
         e.preventDefault();
         try {
             await login(email, password);
-            localStorage.setItem('patientEmail', email);
+            localStorage.setItem('userEmail', email);
             window.location.href = '/main';
         } catch (error) {
             setError("Email ou mot de passe incorrect");
