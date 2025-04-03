@@ -19,51 +19,34 @@ const Calendrier = ({ disponibilites = [] }) => {
     }, []);
 
     const genererEvenements = (disponibilites) => {
-        const creneauxUniques = new Set();
+        const creneauxTries = [...disponibilites].sort((a, b) =>
+            new Date(a.dateHeure) - new Date(b.dateHeure)
+        );
 
-        return disponibilites.flatMap(dispo => {
-            const creneaux = [];
-            const periods = [
-                { start: 9, end: 12 },
-                { start: 13, end: 17 }
-            ];
+        return creneauxTries.map((dispo, index) => {
+            const start = moment(dispo.dateHeure);
+            const end = moment(dispo.dateHeure).add(30, 'minutes');
 
-            periods.forEach(({ start, end }) => {
-                let current = moment(dispo.date).set({ hour: start, minute: 0 });
-                const finPeriode = moment(dispo.date).set({ hour: end, minute: 0 });
-                let creneauIndex = 0;
+            const groupeIndex = index % 3;
+            const estReserveVisuel = groupeIndex !== 0;
+            const estReserve = dispo.reserve || estReserveVisuel;
 
-                while (current.isBefore(finPeriode)) {
-                    const finCreneau = moment(current).add(30, 'minutes');
-                    const slotId = `${current.format()}-${finCreneau.format()}`;
-
-                    if (!creneauxUniques.has(slotId)) {
-                        creneauxUniques.add(slotId);
-
-                        const estReserve = dispo.reserve || creneauIndex % 3 === 0;
-
-                        creneaux.push({
-                            title: estReserve ? "Réservé" : "Disponible",
-                            start: current.toDate(),
-                            end: finCreneau.toDate(),
-                            disponibiliteId: dispo.id,
-                            isDisponible: !estReserve,
-                            style: {
-                                backgroundColor: estReserve ? "#FF0000" : "#2196F3",
-                                color: "#FFFFFF",
-                                borderRadius: "4px",
-                                border: estReserve ? "2px solid #CC0000" : "2px solid #1976D2",
-                                cursor: estReserve ? "not-allowed" : "pointer",
-                                opacity: 1,
-                                transition: "all 0.2s ease"
-                            }
-                        });
-                    }
-                    current = finCreneau;
-                    creneauIndex++;
+            return {
+                title: estReserve ? "Réservé" : "Disponible",
+                start: start.toDate(),
+                end: end.toDate(),
+                disponibiliteId: dispo.id,
+                isDisponible: !dispo.reserve,
+                style: {
+                    backgroundColor: estReserve ? "#FF0000" : "#2196F3",
+                    color: "#FFFFFF",
+                    borderRadius: "4px",
+                    border: estReserve ? "2px solid #CC0000" : "2px solid #1976D2",
+                    cursor: dispo.reserve ? "not-allowed" : "pointer",
+                    opacity: 1,
+                    transition: "all 0.2s ease"
                 }
-            });
-            return creneaux;
+            };
         });
     };
 
@@ -71,7 +54,7 @@ const Calendrier = ({ disponibilites = [] }) => {
         setEvents(genererEvenements(disponibilites));
     }, [disponibilites, patientEmail]);
 
-    const reserverCreneau = async (disponibiliteId, eventIndex) => {
+    const reserverCreneau = async (disponibiliteId) => {
         if (!patientEmail) {
             alert("Connectez-vous pour réserver");
             return;
@@ -83,14 +66,12 @@ const Calendrier = ({ disponibilites = [] }) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-            setEvents(prev => prev.map((event, index) =>
-                index === eventIndex
-                    ? {
-                        ...event,
+            setEvents(prev => prev.map(event =>
+                event.disponibiliteId === disponibiliteId
+                    ? { ...event,
                         title: "Réservé",
                         isDisponible: false,
-                        style: {
-                            ...event.style,
+                        style: { ...event.style,
                             backgroundColor: "#FF0000",
                             border: "2px solid #CC0000",
                             cursor: "not-allowed"
@@ -117,7 +98,7 @@ const Calendrier = ({ disponibilites = [] }) => {
                 localizer={localizer}
                 events={events}
                 step={30}
-                timeslots={2}
+                timeslots={1}
                 min={new Date().setHours(8, 0)}
                 max={new Date().setHours(18, 0)}
                 defaultView="week"
@@ -134,8 +115,7 @@ const Calendrier = ({ disponibilites = [] }) => {
                     if (event.isDisponible && window.confirm(
                         `Confirmer le rendez-vous le ${moment(event.start).format("dddd Do MMMM [à] HH:mm")} ?`
                     )) {
-                        const eventIndex = events.findIndex(e => e.disponibiliteId === event.disponibiliteId && e.start === event.start);
-                        reserverCreneau(event.disponibiliteId, eventIndex);
+                        reserverCreneau(event.disponibiliteId);
                     }
                 }}
                 eventPropGetter={eventStyleGetter}
