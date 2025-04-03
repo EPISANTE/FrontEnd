@@ -3,7 +3,7 @@ import axios from 'axios';
 
 
 export const submitStressTest = (email, sr) => {
-    return axios.get(`/api/patients/stress`, {
+    return axios.get(`http://172.31.250.99:9090/api/patients/stress`, {
         params: {
             email,
             sr
@@ -20,7 +20,7 @@ export const submitStressTest = (email, sr) => {
 };
 
 export const generatePatientBilan = (email) => {
-    return axios.get(`/api/patients/bilan`, {
+    return axios.get(`http://172.31.250.99:9090/api/patients/bilan`, {
         params: { email }
     })
         .then(response => response.data)
@@ -31,7 +31,7 @@ export const generatePatientBilan = (email) => {
 };
 
 export const getPatientInfo = (email) => {
-    return axios.get(`/api/patients/info`, {
+    return axios.get(`http://172.31.250.99:9090/api/patients/info`, {
         params: { email }
     })
         .then(response => response.data)
@@ -42,7 +42,7 @@ export const getPatientInfo = (email) => {
 };
 
 export const login = (email, password) => {
-    return axios.post(`/api/patients/login`, { email, password })
+    return axios.post(`http://172.31.250.99:9090/api/patients/login`, { email, password })
         .then(response => response.data)
         .catch(error => {
             console.error("Erreur de connexion :", error);
@@ -51,7 +51,7 @@ export const login = (email, password) => {
 };
 
 export const register = (patient) => {
-    return axios.post(`/api/patients/register`, patient)
+    return axios.post(`http://172.31.250.99:9090/api/patients/register`, patient)
         .then(response => response.data)
         .catch(error => {
             console.error("Erreur d'inscription :", error);
