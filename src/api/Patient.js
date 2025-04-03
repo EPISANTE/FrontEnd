@@ -42,7 +42,7 @@ export const getPatientInfo = (email) => {
 };
 
 export const login = (email, password) => {
-    return axios.post(`http://172.31.250.99:9090/api/patients/login`, { email, password })
+    return axios.post(`/api/patients/login`, { email, password })
         .then(response => response.data)
         .catch(error => {
             console.error("Erreur de connexion :", error);
