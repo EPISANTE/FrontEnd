@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Calendrier from "../Calendrier/Calendrier";
 import api from "../../axios";
 
 const MedecinList = ({ medecins = [] }) => {
-    const safeMedecins = Array.isArray(medecins) ? medecins : [];
-
     const [selectedMedecin, setSelectedMedecin] = useState(null);
     const [disponibilites, setDisponibilites] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -14,7 +12,6 @@ const MedecinList = ({ medecins = [] }) => {
         if (selectedMedecin?.id === medecin.id) return;
 
         setSelectedMedecin(medecin);
-        setDisponibilites([]);
         setLoading(true);
 
         try {
@@ -28,24 +25,31 @@ const MedecinList = ({ medecins = [] }) => {
         }
     };
 
+    useEffect(() => {
+        const handleUpdate = () => {
+            if (selectedMedecin) {
+                handleMedecinClick(selectedMedecin);
+            }
+        };
+
+        window.addEventListener('reservation-update', handleUpdate);
+        return () => window.removeEventListener('reservation-update', handleUpdate);
+    }, [selectedMedecin]);
+
     return (
         <div className="space-y-4">
-            {safeMedecins.length > 0 ? (
-                safeMedecins.map((medecin) => (
-                    <div
-                        key={medecin.id}
-                        className={`p-4 border rounded shadow-md cursor-pointer hover:bg-gray-100 ${
-                            selectedMedecin?.id === medecin.id ? "bg-blue-100" : "bg-white"
-                        }`}
-                        onClick={() => handleMedecinClick(medecin)}
-                    >
-                        <h2 className="text-xl font-semibold">{medecin.nom}</h2>
-                        <p className="text-gray-600">{medecin.specialite}</p>
-                    </div>
-                ))
-            ) : (
-                <p className="text-gray-500">Aucun médecin trouvé.</p>
-            )}
+            {medecins.map((medecin) => (
+                <div
+                    key={medecin.id}
+                    className={`p-4 border rounded shadow-md cursor-pointer hover:bg-gray-100 ${
+                        selectedMedecin?.id === medecin.id ? "bg-blue-100" : "bg-white"
+                    }`}
+                    onClick={() => handleMedecinClick(medecin)}
+                >
+                    <h2 className="text-xl font-semibold">{medecin.nom}</h2>
+                    <p className="text-gray-600">{medecin.specialite}</p>
+                </div>
+            ))}
 
             {selectedMedecin && (
                 <div className="mt-4">

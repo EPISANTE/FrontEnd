@@ -1,25 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import MedecinList from "../../components/MedecinList/MedecinList";
 import api from "../../axios";
 
 const Home = () => {
     const [medecins, setMedecins] = useState([]);
-
+    const [selectedSpecialite, setSelectedSpecialite] = useState("");
 
     const handleSearch = async (specialite) => {
-        if (specialite) {
-            try {
-                const response = await api.get(`/api/medecins/specialite/${specialite}`);
-                console.log(" Medecins recuperes :", response.data);
-                setMedecins(response.data);
-            } catch (error) {
-                console.error(" Erreur recuperation medecins :", error);
-            }
-        } else {
+        setSelectedSpecialite(specialite);
+
+        if (!specialite) {
             setMedecins([]);
+            return;
+        }
+
+        try {
+            const response = await api.get(`/api/medecins/specialite/${encodeURIComponent(specialite)}`);
+            setMedecins(response.data);
+        } catch (error) {
+            console.error("Erreur :", error.response?.data || error.message);
+            alert("Erreur de chargement : " + (error.response?.data?.message || "Service indisponible"));
         }
     };
+
+    useEffect(() => {
+        const handleUpdate = () => handleSearch(selectedSpecialite);
+        window.addEventListener('reservation-update', handleUpdate);
+        return () => window.removeEventListener('reservation-update', handleUpdate);
+    }, [selectedSpecialite]);
 
     return (
         <div className="p-4">
