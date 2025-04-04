@@ -20,14 +20,13 @@ const NotificationBell = () => {
             const encodedEmail = encodeURIComponent(patientEmail);
             const response = await api.get(`/api/notifications/patient/email/${encodedEmail}`);
 
-
             const formattedNotifications = response.data
                 .map(notif => ({
                     ...notif,
                     dateCreation: moment(notif.dateCreation),
                     dateRdv: moment(notif.dateRdv)
                 }))
-                .sort((a, b) => b.dateCreation - a.dateCreation);
+                .sort((a, b) => a.dateRdv - b.dateRdv); // Tri chronologique
 
             setNotifications(formattedNotifications);
         } catch (error) {
@@ -90,7 +89,7 @@ const NotificationBell = () => {
                                     <div className="notification-details">
                                         <span>Médecin : {notification.medecinNom}</span>
                                         <span>Spécialité : {notification.specialite}</span>
-                                        <span>Date : {notification.dateRdv.format('LLLL')}</span>
+                                        <span>Date : {notification.dateRdv.format("dddd D MMMM YYYY [à] HH:mm")}</span>
                                     </div>
                                     <div className="notification-time">
                                         Reçu {notification.dateCreation.fromNow()}
