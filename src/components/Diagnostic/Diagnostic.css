@@ -1,0 +1,104 @@
+
+.diagnostic-question-container,
+.diagnostic-result-container,
+.diagnostic-loading-container {
+    padding: 20px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    max-width: 500px;
+    text-align: center;
+}
+
+.diagnostic-question-text {
+    font-size: 1.3em;
+    color: #333;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.diagnostic-button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.diagnostic-button {
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-width: 80px;
+}
+
+.diagnostic-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.diagnostic-button-yes {
+    background-color: #4CAF50;
+    color: white;
+}
+.diagnostic-button-yes:hover:not(:disabled) {
+    background-color: #45a049;
+}
+
+.diagnostic-button-no {
+    background-color: #f44336;
+    color: white;
+}
+.diagnostic-button-no:hover:not(:disabled) {
+    background-color: #da190b;
+}
+
+.diagnostic-button-restart {
+    background-color: #008CBA;
+    color: white;
+    margin-top: 20px;
+}
+.diagnostic-button-restart:hover:not(:disabled) {
+    background-color: #007ba7;
+}
+
+
+.diagnostic-result-title {
+    font-size: 1.4em;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.diagnostic-result-text {
+    font-size: 1.1em;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #e8f6f3;
+    border-left: 4px solid #1abc9c;
+    text-align: left;
+    border-radius: 4px;
+    color: #333;
+}
+
+.diagnostic-error-text {
+    background-color: #fbe_ee;
+    border-left-color: #e74c3c;
+    color: #c0392b;
+    font-weight: bold;
+}
+
+
+.diagnostic-disclaimer {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 20px;
+    font-style: italic;
+}
+
+.diagnostic-loading-text {
+    font-style: italic;
+    color: #555;
+}

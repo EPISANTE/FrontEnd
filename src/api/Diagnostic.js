@@ -1,29 +1,27 @@
-import axios from '../axios';
+import api from '../axios';
 
-const DiagnosticAPI = {
-    startDiagnosis: async () => {
-        try {
-            const response = await axios.post('/api/diagnostic/start');
+export const fetchStartNode = async () => {
+    try {
 
-            const [sessionId, firstQuestion] = response.data.split(',');
-            return {sessionId, firstQuestion} ;
-        } catch (error) {
-            console.error("Error starting diagnosis:", error);
-            throw error;
-        }
-    },
-
-    submitAnswer: async (sessionId, answer) => {
-        try {
-            const response = await axios.post(`/api/diagnostic/answer/${sessionId}`, answer, {
-                headers: { 'Content-Type': 'text/plain' }
-            });
-            return response.data;
-        } catch (error) {
-            console.error("Error submitting answer:", error);
-            throw error;
-        }
+        const response = await api.get('/api/decision/start');
+        return response.data;
+    } catch (error) {
+        console.error("API Error fetching start node:", error);
+        throw error;
     }
 };
 
-export default DiagnosticAPI;
+
+export const postAnswer = async (question, answer) => {
+    try {
+        const requestData = { question, answer };
+        const response = await api.post('/api/decision/answer', requestData);
+        return response.data;
+    } catch (error) {
+        console.error("API Error posting answer:", error);
+        if (error.response && error.response.data && error.response.data.decision) {
+            throw new Error(error.response.data.decision);
+        }
+        throw error;
+    }
+};

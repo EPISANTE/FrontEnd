@@ -1,76 +1,109 @@
-import React, { useState, useEffect } from 'react';
-import Question from '../../components/Quiz/Question';
-import DiagnosticAPI from '../../api/Diagnostic.js';
+import React, { useState, useEffect, useCallback } from 'react';
+import { fetchStartNode, postAnswer } from '../../api/Diagnostic';
+import QuestionDisplay from '../../components/Diagnostic/QuestionDisplay';
+import ResultDisplay from '../../components/Diagnostic/ResultDisplay';
+import LoadingIndicator from '../../components/Diagnostic/LoadingIndicator';
 
 
 const DiagnosticContainer = () => {
-    const [sessionId, setSessionId] = useState(null);
-    const [currentQuestion, setCurrentQuestion] = useState(null);
-    const [diagnosis, setDiagnosis] = useState(null);
+    const [currentNode, setCurrentNode] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [answers, setAnswers] = useState([]);
+    const [isComplete, setIsComplete] = useState(false);
+
+    const loadStartNode = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        setIsComplete(false);
+        setCurrentNode(null);
+        try {
+            const startNode = await fetchStartNode();
+            setCurrentNode(startNode);
+            setIsComplete(startNode.type === 'leaf');
+        } catch (err) {
+            console.error("Failed to load start node:", err);
+            setError(err.message || 'Could not start the diagnosis. Please try again later.');
+            setIsComplete(true);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
 
     useEffect(() => {
-        const start = async () => {
-            try {
-                const {sessionId, firstQuestion} = await DiagnosticAPI.startDiagnosis();
-                setSessionId(sessionId);
-                setCurrentQuestion(firstQuestion);
-            } catch (err) {
-                setError("Failed to start diagnosis.");
-            }
-        };
-        start();
-    }, []);
+        loadStartNode();
+    }, [loadStartNode]);
 
-    const handleAnswer = async (questionText, answer) => {
+    const handleAnswer = async (answer) => {
+        if (!currentNode || currentNode.type !== 'decision' || isLoading) {
+            return;
+        }
 
-        setAnswers(prevAnswers => [...prevAnswers, { question: questionText, answer }]);
+        setIsLoading(true);
+        setError(null);
+
         try {
-            const response = await DiagnosticAPI.submitAnswer(sessionId, answer ? 'yes' : 'no');
-            if (response.startsWith("Diagnosis:")) {
-                setDiagnosis(response);
-            } else if (response.startsWith("Invalid answer.")) {
-                setError(response);
-            }
-            else {
-                setCurrentQuestion(response);
-                setError(null);
+            const nextNode = await postAnswer(currentNode.question, answer);
+            setCurrentNode(nextNode);
+            if (nextNode.type === 'leaf') {
+                setIsComplete(true);
             }
         } catch (err) {
-            setError("Failed to process answer.");
+            console.error("Failed to process answer:", err);
+            const errorMsg = err.message || 'An error occurred processing your answer.';
+            setCurrentNode({ type: 'leaf', decision: `Error: ${errorMsg}` });
+            setError(errorMsg);
+            setIsComplete(true);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const handleRestart = () => {
+        loadStartNode();
+    };
 
-    if (diagnosis) {
-        return (
-            <div>
-                <h2>Diagnosis:</h2>
-                <p>{diagnosis}</p>
-                <h3>Answer History:</h3>
-                <ul>
-                    {answers.map((a, index) => (
-                        <li key={index}>
-                            {a.question}: {a.answer ? 'Yes' : 'No'}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        );
-    }
+    const renderCurrentStep = () => {
+        if (isLoading) {
+            return <LoadingIndicator />;
+        }
 
-    if (!currentQuestion) {
-        return <div>Loading...</div>;
-    }
+
+        if (error && !currentNode?.decision?.includes('Error:')) {
+            return <ResultDisplay result={`Error: ${error}`} onRestart={handleRestart} isLoading={false} />;
+        }
+
+        if (!currentNode) {
+            return <p>Initializing diagnostic...</p>;
+        }
+
+        if (currentNode.type === 'decision' && !isComplete) {
+            return (
+                <QuestionDisplay
+                    question={currentNode.question}
+                    onAnswer={handleAnswer}
+                    isLoading={isLoading}
+                />
+            );
+        }
+
+        if (currentNode.type === 'leaf' || isComplete) {
+            return (
+                <ResultDisplay
+                    result={currentNode.decision}
+                    onRestart={handleRestart}
+                    isLoading={isLoading}
+                />
+            );
+        }
+
+        return <p>An unexpected error occurred in the diagnostic flow.</p>;
+    };
 
     return (
-        <div>
-            <Question question={{ question: currentQuestion, id: 'current' }} onAnswer={handleAnswer} />
+        <div className="diagnostic-container-wrapper">
+            <h1>Symptom Checker</h1>
+            {renderCurrentStep()}
         </div>
     );
 };
