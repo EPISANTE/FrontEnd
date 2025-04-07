@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import api from '../../axios';
 import moment from 'moment';
 import 'moment/locale/fr';
@@ -9,8 +9,10 @@ import './NotificationBell.css';
 moment.locale('fr');
 
 const NotificationBell = () => {
-    const [notifications, setNotifications] = useState([]);
+    const [upcomingNotifications, setUpcomingNotifications] = useState([]);
+    const [pastNotifications, setPastNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('upcoming');
     const patientEmail = localStorage.getItem('patientEmail');
 
     const fetchNotifications = async () => {
@@ -20,17 +22,41 @@ const NotificationBell = () => {
             const encodedEmail = encodeURIComponent(patientEmail);
             const response = await api.get(`/api/notifications/patient/email/${encodedEmail}`);
 
-            const formattedNotifications = response.data
-                .map(notif => ({
+            const now = moment();
+            const upcoming = [];
+            const past = [];
+
+            response.data.forEach(notif => {
+                const notification = {
                     ...notif,
                     dateCreation: moment(notif.dateCreation),
                     dateRdv: moment(notif.dateRdv)
-                }))
-                .sort((a, b) => a.dateRdv - b.dateRdv); // Tri chronologique
+                };
 
-            setNotifications(formattedNotifications);
+                if (notification.dateRdv.isAfter(now)) {
+                    upcoming.push(notification);
+                } else {
+                    past.push(notification);
+                }
+            });
+
+            setUpcomingNotifications(upcoming.sort((a, b) => a.dateRdv - b.dateRdv));
+            setPastNotifications(past.sort((a, b) => b.dateRdv - a.dateRdv));
         } catch (error) {
             handleNotificationError(error);
+        }
+    };
+
+    const handleAnnulation = async (notificationId) => {
+        if (window.confirm("Voulez-vous vraiment annuler ce rendez-vous ?")) {
+            try {
+                await api.delete(`/api/rendezvous/annuler/${notificationId}`);
+                fetchNotifications();
+                window.dispatchEvent(new Event('reservation-update'));
+                alert("Rendez-vous annulé avec succès !");
+            } catch (error) {
+                alert("Échec de l'annulation : " + (error.response?.data?.message || "Erreur serveur"));
+            }
         }
     };
 
@@ -60,12 +86,47 @@ const NotificationBell = () => {
         return () => clearInterval(interval);
     }, [patientEmail]);
 
+    const NotificationItem = ({ notification, isPast }) => (
+        <div className={`notification-item ${isPast ? 'past' : ''}`}>
+            <div className="notification-message">
+                {isPast ? (
+                    `Vous avez passé un rendez-vous avec Dr ${notification.medecinNom}`
+                ) : (
+                    notification.message
+                )}
+                <span className={`status-badge ${isPast ? 'past-badge' : 'upcoming-badge'}`}>
+                    {isPast ? 'Terminé' : 'À venir'}
+                </span>
+            </div>
+            <div className="notification-details">
+                <span>Médecin : {notification.medecinNom}</span>
+                <span>Spécialité : {notification.specialite}</span>
+                <span>Date : {notification.dateRdv.format("dddd D MMMM YYYY [à] HH:mm")}</span>
+            </div>
+            <div className="notification-actions">
+                <div className="notification-time">
+                    {isPast ? "Effectué " : "Reçu "}
+                    {notification.dateCreation.fromNow()}
+                </div>
+                {!isPast && (
+                    <button
+                        className="cancel-button"
+                        onClick={() => handleAnnulation(notification.id)}
+                    >
+                        <FontAwesomeIcon icon={faTimesCircle} />
+                        Annuler
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <div className="notification-bell">
             <button onClick={() => setIsOpen(!isOpen)} className="bell-button">
                 <FontAwesomeIcon icon={faBell} size="lg" />
-                {notifications.length > 0 && (
-                    <span className="notification-badge">{notifications.length}</span>
+                {upcomingNotifications.length > 0 && (
+                    <span className="notification-badge">{upcomingNotifications.length}</span>
                 )}
             </button>
 
@@ -73,29 +134,52 @@ const NotificationBell = () => {
                 <div className="notification-dropdown">
                     <div className="notification-header">
                         <h4>Vos Rendez-vous</h4>
+                        <div className="tabs">
+                            <button
+                                className={`tab ${activeTab === 'upcoming' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('upcoming')}
+                            >
+                                À venir ({upcomingNotifications.length})
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'past' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('past')}
+                            >
+                                Historique ({pastNotifications.length})
+                            </button>
+                        </div>
                         <button onClick={() => setIsOpen(false)}>×</button>
                     </div>
+
                     <div className="notification-list">
-                        {notifications.length === 0 ? (
-                            <div className="notification-item empty">
-                                Aucun rendez-vous programmé
-                            </div>
-                        ) : (
-                            notifications.map(notification => (
-                                <div key={notification.id} className="notification-item">
-                                    <div className="notification-message">
-                                        {notification.message}
-                                    </div>
-                                    <div className="notification-details">
-                                        <span>Médecin : {notification.medecinNom}</span>
-                                        <span>Spécialité : {notification.specialite}</span>
-                                        <span>Date : {notification.dateRdv.format("dddd D MMMM YYYY [à] HH:mm")}</span>
-                                    </div>
-                                    <div className="notification-time">
-                                        Reçu {notification.dateCreation.fromNow()}
-                                    </div>
+                        {activeTab === 'upcoming' ? (
+                            upcomingNotifications.length === 0 ? (
+                                <div className="notification-item empty">
+                                    Aucun rendez-vous à venir
                                 </div>
-                            ))
+                            ) : (
+                                upcomingNotifications.map(notification => (
+                                    <NotificationItem
+                                        key={notification.id}
+                                        notification={notification}
+                                        isPast={false}
+                                    />
+                                ))
+                            )
+                        ) : (
+                            pastNotifications.length === 0 ? (
+                                <div className="notification-item empty">
+                                    Aucun rendez-vous dans l'historique
+                                </div>
+                            ) : (
+                                pastNotifications.map(notification => (
+                                    <NotificationItem
+                                        key={notification.id}
+                                        notification={notification}
+                                        isPast={true}
+                                    />
+                                ))
+                            )
                         )}
                     </div>
                 </div>
