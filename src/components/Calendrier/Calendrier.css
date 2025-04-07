@@ -88,3 +88,16 @@
     color: white !important;
     border-color: #2196F3 !important;
 }
+
+.rbc-event--selected {
+    box-shadow: 0 0 0 2px #2196F3;
+}
+
+
+.rbc-event--modifiable {
+    cursor: pointer;
+}
+
+.rbc-event--modifiable:hover {
+    opacity: 0.9;
+}

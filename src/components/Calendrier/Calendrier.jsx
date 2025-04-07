@@ -9,9 +9,10 @@ import "./Calendrier.css";
 moment.locale("fr");
 const localizer = momentLocalizer(moment);
 
-const Calendrier = ({ disponibilites = [] }) => {
+const Calendrier = ({ disponibilites = [], onRefresh }) => {
     const [events, setEvents] = useState([]);
     const [patientEmail, setPatientEmail] = useState(null);
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
     useEffect(() => {
         const email = localStorage.getItem("patientEmail");
@@ -27,20 +28,23 @@ const Calendrier = ({ disponibilites = [] }) => {
             const start = moment(dispo.dateHeure);
             const end = moment(dispo.dateHeure).add(30, 'minutes');
 
+
             const groupeIndex = index % 3;
             const estReserveVisuel = groupeIndex !== 0;
+
+
             const estReserve = dispo.reserve || estReserveVisuel;
 
             return {
+                id: dispo.id,
                 title: estReserve ? "Réservé" : "Disponible",
                 start: start.toDate(),
                 end: end.toDate(),
                 disponibiliteId: dispo.id,
                 isDisponible: !dispo.reserve,
+                isReserveVisuel: estReserveVisuel,
                 style: {
                     backgroundColor: estReserve ? "#FF0000" : "#2196F3",
-                    color: "#FFFFFF",
-                    borderRadius: "4px",
                     border: estReserve ? "2px solid #CC0000" : "2px solid #1976D2",
                     cursor: dispo.reserve ? "not-allowed" : "pointer",
                     opacity: 1,
@@ -87,6 +91,55 @@ const Calendrier = ({ disponibilites = [] }) => {
         }
     };
 
+    const handleModification = async (newSlot) => {
+        if (!selectedEvent) return;
+
+        try {
+
+            const response = await api.post(
+                `/api/rendezvous/${selectedEvent.id}/modifier`,
+                { nouvelleDisponibiliteId: newSlot.id }
+            );
+
+
+            setEvents(prev => prev.map(event => {
+                if (event.id === newSlot.id) {
+                    return {
+                        ...event,
+                        title: "Réservé",
+                        isDisponible: false,
+                        style: {
+                            ...event.style,
+                            backgroundColor: "#FF0000",
+                            border: "2px solid #CC0000",
+                            cursor: "not-allowed"
+                        }
+                    };
+                }
+                if (event.id === selectedEvent.id) {
+                    return {
+                        ...event,
+                        title: "Disponible",
+                        isDisponible: true,
+                        style: {
+                            ...event.style,
+                            backgroundColor: "#2196F3",
+                            border: "2px solid #1976D2",
+                            cursor: "pointer"
+                        }
+                    };
+                }
+                return event;
+            }));
+
+            window.dispatchEvent(new Event('reservation-update'));
+            alert("Rendez-vous modifié avec succès !");
+        } catch (error) {
+            alert("Échec : " + (error.response?.data?.message || "Erreur serveur"));
+        }
+        setSelectedEvent(null);
+    };
+
     const eventStyleGetter = (event) => ({
         style: event.style
     });
@@ -111,14 +164,29 @@ const Calendrier = ({ disponibilites = [] }) => {
                     week: "Semaine",
                     day: "Jour"
                 }}
+                eventPropGetter={eventStyleGetter}
                 onSelectEvent={event => {
                     if (event.isDisponible && window.confirm(
                         `Confirmer le rendez-vous le ${moment(event.start).format("dddd Do MMMM [à] HH:mm")} ?`
                     )) {
                         reserverCreneau(event.disponibiliteId);
+                    } else if (!event.isDisponible) {
+                        setSelectedEvent(event);
                     }
                 }}
-                eventPropGetter={eventStyleGetter}
+                selectable
+                onSelectSlot={(slotInfo) => {
+                    if (!selectedEvent) return;
+
+                    const newSlot = events.find(e =>
+                        moment(e.start).isSame(slotInfo.start) &&
+                        e.isDisponible
+                    );
+
+                    if (newSlot) {
+                        handleModification(newSlot);
+                    }
+                }}
             />
         </div>
     );
