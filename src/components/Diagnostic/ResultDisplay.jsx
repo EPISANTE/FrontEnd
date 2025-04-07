@@ -13,7 +13,7 @@ const ResultDisplay = ({ result, onRestart, isLoading }) => {
             </p>
             {!isError && (
                 <p className="diagnostic-disclaimer">
-                    Disclaimer: This is a simplified model and IS NOT a substitute for professional medical advice. Always consult a healthcare professional.
+                    Have you a good health :)
                 </p>
             )}
             <button

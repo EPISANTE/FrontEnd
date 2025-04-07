@@ -2,8 +2,8 @@ import api from '../axios';
 
 export const fetchStartNode = async () => {
     try {
-
         const response = await api.get('/api/decision/start');
+        console.log("Fetched start node:", response.data);
         return response.data;
     } catch (error) {
         console.error("API Error fetching start node:", error);
@@ -12,10 +12,11 @@ export const fetchStartNode = async () => {
 };
 
 
-export const postAnswer = async (question, answer) => {
+export const postAnswer = async (nodeId, answer) => {
     try {
-        const requestData = { question, answer };
+        const requestData = { nodeId, answer };
         const response = await api.post('/api/decision/answer', requestData);
+        console.log("Received next node:", response.data);
         return response.data;
     } catch (error) {
         console.error("API Error posting answer:", error);
