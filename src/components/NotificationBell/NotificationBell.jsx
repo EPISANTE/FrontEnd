@@ -32,7 +32,6 @@ const NotificationBell = () => {
                     dateCreation: moment(notif.dateCreation),
                     dateRdv: moment(notif.dateRdv)
                 };
-
                 if (notification.dateRdv.isAfter(now)) {
                     upcoming.push(notification);
                 } else {

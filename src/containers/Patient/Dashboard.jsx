@@ -14,10 +14,11 @@ const Dashboard = () => {
     const [stressResponses, setStressResponses] = useState(Array(6).fill(0));
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [showStressResult, setShowStressResult] = useState(false);
+    const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
     const userEmail = localStorage.getItem('userEmail');
 
-    const stressTestQuestions = [
+    const originalStressTestQuestions = [
         "Les autres vous ont-ils dit que vous sembliez plus irritable que d'habitude ?",
         "Avez-vous remarqué des tensions musculaires (p. ex., mâchoire serrée) ?",
         "Avez-vous évité des interactions sociales récemment ?",
@@ -25,6 +26,15 @@ const Dashboard = () => {
         "À quelle fréquence ressentez-vous des maux de tête ou des troubles digestifs ?",
         "À quel point avez-vous du mal à vous concentrer ?"
     ];
+
+    const shuffle = (array) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    };
 
     useEffect(() => {
         if (userEmail) {
@@ -61,6 +71,8 @@ const Dashboard = () => {
     };
 
     const handleStressTestStart = () => {
+        const shuffled = shuffle(originalStressTestQuestions);
+        setShuffledQuestions(shuffled);
         setStressResponses(Array(6).fill(0));
         setCurrentQuestionIndex(0);
         setShowStressResult(false);
@@ -68,7 +80,7 @@ const Dashboard = () => {
     };
 
     const handleNextQuestion = () => {
-        if (currentQuestionIndex < stressTestQuestions.length - 1) {
+        if (currentQuestionIndex < shuffledQuestions.length - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
         }
     };
@@ -154,10 +166,10 @@ const Dashboard = () => {
                     </div>
                 ) : (
                     <div className="stress-test">
-                        <h3>Question {currentQuestionIndex + 1}/{stressTestQuestions.length}</h3>
+                        <h3>Question {currentQuestionIndex + 1}/{shuffledQuestions.length}</h3>
 
                         <div className="question-container">
-                            <p>{stressTestQuestions[currentQuestionIndex]}</p>
+                            <p>{shuffledQuestions[currentQuestionIndex]}</p>
                             <div className="scale">
                                 {[0, 1, 2, 3].map((value) => (
                                     <label key={value}>
@@ -182,7 +194,7 @@ const Dashboard = () => {
                                 Précédent
                             </button>
 
-                            {currentQuestionIndex === stressTestQuestions.length - 1 ? (
+                            {currentQuestionIndex === shuffledQuestions.length - 1 ? (
                                 <button
                                     onClick={handleStressTestSubmit}
                                     disabled={!isAllAnswered}
