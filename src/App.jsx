@@ -6,58 +6,42 @@ import Dashboard from './containers/Patient/Dashboard';
 import MainContent from './components/Home/MainContent';
 import PageNotFound from './components/PageNotFound/PageNotFound';
 import PatientsPage from './containers/Patient/PatientsPage';
-import QuizContainer from "./containers/Quiz/QuizContainer.jsx";
-import DiagnosticContainer from "./containers/Diagnostic/DiagnosticContainer.jsx"
+import DiagnosticContainer from "./containers/Diagnostic/DiagnosticContainer.jsx";
 import SearchBar from "src/components/SearchBar/SearchBar.jsx";
 import Calendrier from "src/components/Calendrier/Calendrier.jsx";
 import Home from "src/containers/Home/Home.jsx";
-import AkinatorContainer from "./containers/Akinator/AkinatorContainer.jsx";
+import './index.css';
 
 const App = () => {
     return (
         <Router>
-            <div className="App">
+            <div className="App flex flex-col min-h-screen">
                 <Header />
-                <Routes>
-                    <Route path="/" element={<AuthPage />} />
+                <main className="flex-grow">
+                    <Routes>
 
-                    <Route path="/dashboard"
-                        element={
-                            localStorage.getItem('userEmail')
-                                ? <Dashboard />
-                                : <Navigate to="/" replace />
-                        }
-                    />
-                    <Route path="/patients" element={<PatientsPage />} />
-                    <Route path="/quiz" element={<QuizContainer />} />
+                        <Route path="/" element={<AuthPage />} />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                localStorage.getItem('userEmail')
+                                    ? <Dashboard />
+                                    : <Navigate to="/" replace />
+                            }
+                        />
+                        <Route path="/patients" element={<PatientsPage />} />
 
-                    <Route path= "/coco" element={<AkinatorContainer/>} />
-
-                    <Route path="/" element={<MainContent />} />
-
-
-                    <Route path="/main" element={<MainContent />} />
-
-
-                    <Route path="/rendezvous" element={<Home />} />
+                        <Route path="/main" element={<MainContent />} />
+                        <Route path="/rendezvous" element={<Home />} />
+                        <Route path="/rendezvous/medecins" element={<Home />} />
+                        <Route path="/search" element={<SearchBar />} />
+                        <Route path="/diagnostic" element={<DiagnosticContainer />} />
+                        <Route path="/calendrier/:medecinId" element={<Calendrier />} />
 
 
-                    <Route path="/search" element={<SearchBar />} />
-
-                    <Route path="/diagnostic" element={<DiagnosticContainer />} />
-
-
-                  {/*//  <Route path="/medecins" element={<MedecinList />} />*/}
-                    <Route path="/rendezvous" element={<Home />} />
-                    <Route path="/rendezvous/medecins" element={<Home />} />
-
-                    <Route path="/calendrier/:medecinId" element={<Calendrier />} />
-
-                    <Route path="/diagnostic" element={<DiagnosticContainer />} />
-
-
-                    <Route path="*" element={<PageNotFound />} />
-                </Routes>
+                        <Route path="*" element={<PageNotFound />} />
+                    </Routes>
+                </main>
                 <Footer />
             </div>
         </Router>
