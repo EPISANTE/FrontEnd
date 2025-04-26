@@ -1,10 +1,12 @@
 import React from 'react';
-import './Diagnostic.css';
+
 
 const LoadingIndicator = () => {
     return (
-        <div className="diagnostic-loading-container">
-            <p className="diagnostic-loading-text">Loading...</p>
+
+        <div className="p-5 my-5 mx-auto bg-gray-50 border border-gray-200 rounded-lg max-w-md text-center shadow-sm">
+
+            <p className="italic text-gray-600">Loading...</p>
         </div>
     );
 };

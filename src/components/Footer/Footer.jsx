@@ -3,7 +3,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 // Import some social icons from react-icons
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from 'react-icons/fa';
-// Remove the CSS import: import './footer.css';
 
 const Footer = () => {
     return (
